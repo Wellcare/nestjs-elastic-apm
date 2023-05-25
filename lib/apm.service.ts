@@ -32,4 +32,9 @@ export class ApmService {
   setCustomContext(context: Record<string, unknown>): void {
     this.apm.setCustomContext(context);
   }
+    
+  currentTraceparent(): string | null {
+    const current = this.apm._instrumentation.currSpan() || this.apm._instrumentation.currTransaction()    
+    return current ? current.traceparent : null;
+  }
 }
