@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-elastic-apm",
+  "name": "@wellcare/nestjs-elastic-apm",
   "version": "1.2.1",
   "description": "NestJs Elastic APM Module",
   "directories": {
@@ -12,7 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Wellcare/nestjs-elastic-apm"
+    "url": "git+https://github.com/Wellcare/nestjs-elastic-apm",
+    "directory": "packages/nestjs-elastic-apm"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "NestJS",

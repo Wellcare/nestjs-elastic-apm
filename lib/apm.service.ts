@@ -34,7 +34,6 @@ export class ApmService {
   }
     
   currentTraceparent(): string | null {
-    const current = this.apm._instrumentation.currSpan() || this.apm._instrumentation.currTransaction()    
-    return current ? current.traceparent : null;
+    return this.apm.currentTraceparent
   }
 }
