@@ -55,5 +55,19 @@ steps:
     displayName: Verify build output
 
   # publishConfig.registry points at the feed and takes precedence over --registry.
-  - script: npm publish
+  #
+  # "Already present" is success: the registry mirror populated the feed with every version the
+  # Seller published, including the one this commit builds, and did so bit-identically. A
+  # collision means the artefact is already delivered. Any other failure still fails the build.
+  - script: |
+      set +e
+      OUT=$(npm publish 2>&1); RC=$?
+      echo "$OUT"
+      if [ $RC -ne 0 ]; then
+        if echo "$OUT" | grep -qiE "already contains file|EPUBLISHCONFLICT|cannot publish over"; then
+          echo "##vso[task.logissue type=warning]this version is already in the feed from the registry mirror; treating as published"
+          exit 0
+        fi
+        exit $RC
+      fi
     displayName: Publish to feed
