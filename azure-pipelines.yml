@@ -1,0 +1,59 @@
+# Build and publish a TypeScript library package to the Buyer's Azure Artifacts feed.
+#
+# Covers the `tsc-lib` family: plain tsc / nest build, no Nuxt module tooling.
+#
+# Replaces the Seller's publish path, which the Buyer cannot run:
+#   - nestjs-workflow    -> GitHub Actions, Node 12.x, `yarn publish` to npm.pkg.github.com
+#                           authenticated with secrets.GIT_TOKEN
+#   - nestjs-elastic-apm -> NO CI configuration exists in the repository at all. However its
+#                           published versions were produced, that knowledge is not in the
+#                           transfer. Recorded as an open Seller ask.
+#
+# Deviations recorded deliberately:
+#   - Node 18 rather than the Seller's 12.x, which reached end-of-life in April 2022 and is
+#     not provisioned on current hosted images.
+#   - `npm publish` rather than `yarn publish`: yarn v1 prompts for a version on publish and
+#     has no reliable non-interactive path in CI.
+
+trigger:
+  branches:
+    include:
+      - pmc
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  HUSKY: '0'
+
+steps:
+  - task: UseNode@1
+    displayName: Use Node 18
+    inputs:
+      version: '18.x'
+
+  # Injects feed credentials into .npmrc using the pipeline identity.
+  # No PAT, and nothing secret committed to the repository.
+  - task: npmAuthenticate@0
+    displayName: Authenticate Azure Artifacts
+    inputs:
+      workingFile: .npmrc
+
+  # yarn, not npm: these packages predate npm 7's strict peer-dependency resolution and
+  # several have internally inconsistent dependency sets that npm refuses outright
+  # (common-libs failed ERESOLVE this way). Yarn v1 warns and continues, which is the
+  # behaviour the Seller's builds relied on.
+  - script: yarn install
+    displayName: Install dependencies (yarn)
+
+  - script: yarn build
+    displayName: Build
+
+  - script: |
+      test -d dist || { echo "dist/ was not produced"; exit 1; }
+      echo "dist/ contents:"; ls -la dist | head -20
+    displayName: Verify build output
+
+  # publishConfig.registry points at the feed and takes precedence over --registry.
+  - script: npm publish
+    displayName: Publish to feed

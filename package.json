@@ -16,7 +16,7 @@
     "directory": "packages/nestjs-elastic-apm"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://pkgs.dev.azure.com/PHARMACITYJSC/wellcare/_packaging/wellcare/npm/registry/"
   },
   "keywords": [
     "NestJS",
